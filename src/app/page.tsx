@@ -8,7 +8,6 @@ type Paper = {
   summary: string;
   published: string;
   link: string;
-  // Summary fields are optional initially
   title_ja?: string;
   points?: string[];
   category?: string;
@@ -19,13 +18,54 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // Default empty means default complex query
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // State to track which papers are currently being summarized
+  // Bookmarks State: Store full Paper objects
+  const [bookmarks, setBookmarks] = useState<Paper[]>([]);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
+
   const [summarizing, setSummarizing] = useState<Set<string>>(new Set());
+
+  // Load bookmarks on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("robo-digest-bookmarks");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          typeof parsed[0] === "object" &&
+          "id" in parsed[0]
+        ) {
+          // Deduplicate by ID
+          const uniqueBookmarks = Array.from(
+            new Map(parsed.map((item: Paper) => [item.id, item])).values(),
+          );
+          setBookmarks(uniqueBookmarks as Paper[]);
+        } else {
+          // Invalid or old format (e.g. array of strings), clear it
+          localStorage.removeItem("robo-digest-bookmarks");
+        }
+      } catch (e) {
+        console.error("Failed to parse bookmarks", e);
+      }
+    }
+  }, []);
+
+  // Save bookmarks on change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("robo-digest-bookmarks", JSON.stringify(bookmarks));
+    }
+  }, [bookmarks]);
 
   useEffect(() => {
     const fetchPapers = async () => {
+      // If showing saved only, we don't necessarily need to fetch,
+      // but usually we want to keep the background list updated or just let it stay.
+      // If the user searches while in "Saved Only" mode, should we switch back?
+      // For now, let's keep fetching independent of view mode.
       setLoading(true);
       setError(null);
       try {
@@ -51,6 +91,21 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchQuery(keyword);
+    // Optionally switch back to all papers view on search
+    setShowSavedOnly(false);
+  };
+
+  const isBookmarked = (id: string) => bookmarks.some((b) => b.id === id);
+
+  const toggleBookmark = (paper: Paper, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBookmarks((prev) => {
+      if (prev.some((b) => b.id === paper.id)) {
+        return prev.filter((b) => b.id !== paper.id);
+      } else {
+        return [...prev, paper];
+      }
+    });
   };
 
   const handleSummarize = async (paper: Paper) => {
@@ -72,9 +127,15 @@ export default function Home() {
 
       const data = await res.json();
 
-      // Update the specific paper with summary data
+      // Update both the main list AND the bookmarks if this paper is bookmarked
+      const updatedPaper = { ...paper, ...data };
+
       setPapers((prev) =>
-        prev.map((p) => (p.id === paper.id ? { ...p, ...data } : p)),
+        prev.map((p) => (p.id === paper.id ? updatedPaper : p)),
+      );
+
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === paper.id ? updatedPaper : b)),
       );
     } catch (err) {
       console.error(err);
@@ -88,6 +149,9 @@ export default function Home() {
     }
   };
 
+  // Decide what to display
+  const displayedPapers = showSavedOnly ? bookmarks : papers;
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
@@ -98,28 +162,55 @@ export default function Home() {
             </h1>
             <p className="mt-2 text-slate-600">
               Robotics Research Dashboard{" "}
-              {searchQuery && `for "${searchQuery}"`}
+              {searchQuery && !showSavedOnly && `for "${searchQuery}"`}
+              {showSavedOnly && " (Favorites)"}
             </p>
           </div>
 
-          <form onSubmit={handleSearch} className="flex gap-2 w-full sm:w-auto">
-            <input
-              type="text"
-              placeholder="Search keywords..."
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
+          <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
             <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+              onClick={() => setShowSavedOnly(!showSavedOnly)}
+              className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+                showSavedOnly
+                  ? "bg-yellow-100 text-yellow-700 border-yellow-200 border"
+                  : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-50"
+              }`}
             >
-              Search
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              {showSavedOnly ? "全て表示" : "お気に入り"}
             </button>
-          </form>
+
+            <form
+              onSubmit={handleSearch}
+              className="flex gap-2 w-full sm:w-auto"
+              suppressHydrationWarning={true}
+            >
+              <input
+                type="text"
+                placeholder="Search keywords..."
+                className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                suppressHydrationWarning={true}
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+              >
+                Search
+              </button>
+            </form>
+          </div>
         </header>
 
-        {loading ? (
+        {loading && !showSavedOnly ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div
@@ -136,7 +227,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-        ) : error ? (
+        ) : error && !showSavedOnly ? (
           <div className="text-center py-10">
             <p className="text-red-500 font-medium">{error}</p>
             <button
@@ -146,15 +237,55 @@ export default function Home() {
               再読み込み
             </button>
           </div>
-        ) : papers.length === 0 ? (
-          <p className="text-center text-slate-500 py-10">No papers found.</p>
+        ) : displayedPapers.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-slate-500 text-lg">
+              {showSavedOnly
+                ? "お気に入りの論文はまだありません。"
+                : "論文が見つかりませんでした。"}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {papers.map((paper) => (
+            {displayedPapers.map((paper) => (
               <article
                 key={paper.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col"
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col relative group"
               >
+                <button
+                  onClick={(e) => toggleBookmark(paper, e)}
+                  className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-full transition"
+                  title={
+                    isBookmarked(paper.id) ? "お気に入り解除" : "お気に入り追加"
+                  }
+                >
+                  {isBookmarked(paper.id) ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      />
+                    </svg>
+                  )}
+                </button>
+
                 <div className="p-6 flex-1">
                   {paper.category && (
                     <div className="flex justify-between items-start mb-3">
@@ -166,7 +297,7 @@ export default function Home() {
 
                   {paper.title_ja ? (
                     <>
-                      <h2 className="text-xl font-bold text-slate-800 leading-snug mb-2">
+                      <h2 className="text-xl font-bold text-slate-800 leading-snug mb-2 pr-8">
                         {paper.title_ja}
                       </h2>
                       <ul className="space-y-2 text-sm text-slate-600 mt-4 mb-4">
@@ -180,7 +311,7 @@ export default function Home() {
                     </>
                   ) : (
                     <>
-                      <h2 className="text-lg font-semibold text-slate-800 leading-snug mb-2">
+                      <h2 className="text-lg font-semibold text-slate-800 leading-snug mb-2 pr-8">
                         {paper.title}
                       </h2>
                       <p className="text-sm text-slate-500 line-clamp-4 mb-4">
