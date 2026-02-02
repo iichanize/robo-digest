@@ -41,7 +41,7 @@ jobs:
           rsync -avz --delete \
             --exclude '.git' \
             --exclude 'node_modules' \
-            ./.next ./public ./package.json ./package-lock.json ./next.config.mjs \
+            ./.next ./public ./package.json ./package-lock.json ./next.config.ts \
             ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_HOST }}:/var/www/robo-digest/
 
       - name: Start Application
