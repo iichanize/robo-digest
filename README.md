@@ -2,7 +2,7 @@
 
 **RoboDigest** is a daily dashboard for robotics researchers and enthusiasts. It fetches the latest papers from arXiv (`cs.RO`) and provides AI-powered summaries on demand, helping you stay up-to-date with trends in ROS 2, logistics, warehouse automation, and simulation.
 
-![Initial MVP](https://via.placeholder.com/800x400?text=RoboDigest+Dashboard+Preview)
+![Dashboard Preview](public/dashboard-preview.png)
 
 ## Features
 
