@@ -1,15 +1,17 @@
 # RoboDigest
 
-**RoboDigest** is a daily dashboard for robotics researchers and enthusiasts. It fetches the latest papers from arXiv (`cs.RO`) and provides AI-powered summaries on demand, helping you stay up-to-date with trends in ROS 2, logistics, warehouse automation, and simulation.
+**RoboDigest** is a daily dashboard for robotics researchers and enthusiasts. It fetches the latest papers from arXiv (`cs.RO`) and trending YouTube videos, providing AI-powered summaries on demand to help you stay up-to-date with trends in ROS 2, logistics, warehouse automation, and simulation.
 
 ![Dashboard Preview](public/dashboard-preview.png)
 
 ## Features
 
 - **Daily Feed**: Automatically fetches the latest robotics papers from arXiv.
-- **Smart Search**: Filter papers by keywords to find exactly what you're interested in.
+- **YouTube Integration**: Browse trending robotics videos from YouTube via the Data API v3.
+- **Tab Switching**: Seamlessly switch between 📄 Papers and ▶ YouTube tabs.
+- **Smart Search**: Filter papers or videos by keywords to find exactly what you're interested in.
 - **AI Summarization**: Click "✨ AI要約する" to generate a concise 3-point summary in Japanese using Google Gemini 2.5.
-- **Bookmarks**: Save interesting papers to your favorites (stored locally in your browser).
+- **Unified Bookmarks**: Save papers and videos to your favorites, viewable in a single list.
 - **Responsive Design**: Modern, clean interface built with Tailwind CSS.
 
 ## Getting Started
@@ -18,6 +20,7 @@
 
 - Node.js (v18+)
 - Google Gemini API Key
+- YouTube Data API v3 Key
 
 ### Installation
 
@@ -39,6 +42,7 @@
 
     ```env
     GEMINI_API_KEY=your_gemini_api_key_here
+    YOUTUBE_API_KEY=your_youtube_api_key_here
     ```
 
 4.  Run the development server:
@@ -51,11 +55,11 @@
 
 ## Tech Stack
 
-- **Framework**: Next.js 14+ (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS v4
 - **AI**: Google Gemini API (`gemini-2.5-flash`)
-- **Data Source**: arXiv API
+- **Data Sources**: arXiv API, YouTube Data API v3
 
 ## License
 

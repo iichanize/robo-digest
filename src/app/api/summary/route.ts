@@ -5,7 +5,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 export async function POST(request: Request) {
   try {
-    const { title, summary } = await request.json();
+    const { title, summary, type = "paper" } = await request.json();
 
     if (!GEMINI_API_KEY) {
       return NextResponse.json({
@@ -22,7 +22,26 @@ export async function POST(request: Request) {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = `
+    const prompt =
+      type === "video"
+        ? `
+      You are a robotics expert. Summarize the following YouTube video for a dashboard.
+      Output must be a valid JSON object.
+      
+      Video Title: ${title}
+      Video Description: ${summary}
+      
+      Required JSON Format:
+      {
+        "title_ja": "Japanese title (max 30 chars, catchy)",
+        "points": ["Point 1 (Topic)", "Point 2 (Key content)", "Point 3 (Takeaway)"],
+        "category": "Technical tag (e.g. SLAM, Manipulation, AGV, Tutorial) - English only"
+      }
+      
+      Ensure "points" are in Japanese.
+      Ensure "category" is short and precise.
+    `
+        : `
       You are a robotics expert. Summarize the following academic paper for a dashboard.
       Output must be a valid JSON object.
       
