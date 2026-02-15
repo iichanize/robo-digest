@@ -25,6 +25,7 @@ jobs:
         env:
           # ビルド時にAPIキーが必要な場合のため（念のため）
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
       - name: Prepare SSH Key
         run: |
@@ -51,6 +52,7 @@ jobs:
             
             # 本番環境用の環境変数ファイルを作成
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env.local
+            echo "YOUTUBE_API_KEY=${{ secrets.YOUTUBE_API_KEY }}" >> .env.local
             
             # 本番用の依存ライブラリのみインストール (高速化)
             npm ci --production
