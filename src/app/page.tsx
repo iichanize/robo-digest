@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { type Paper, type Video, type ContentItem } from "./types";
-import Header from "./components/Header";
+import Header, {
+  type PaperSortOption,
+  type YouTubeSortOption,
+} from "./components/Header";
 import PaperCard from "./components/PaperCard";
 import VideoCard from "./components/VideoCard";
 import SkeletonCard from "./components/SkeletonCard";
@@ -25,6 +28,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [keyword, setKeyword] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sort state
+  const [paperSort, setPaperSort] = useState<PaperSortOption>("submittedDate");
+  const [youtubeSort, setYoutubeSort] = useState<YouTubeSortOption>("date");
 
   // Bookmarks: unified Paper + Video
   const [bookmarks, setBookmarks] = useState<ContentItem[]>([]);
@@ -107,6 +114,7 @@ export default function Home() {
         if (searchQuery) {
           params.set("q", searchQuery);
         }
+        params.set("sortBy", paperSort);
         const res = await fetch(`/api/news?${params.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch data");
         const data = await res.json();
@@ -124,7 +132,7 @@ export default function Home() {
     if (activeTab === "papers" || !videosInitialized) {
       fetchPapers();
     }
-  }, [searchQuery, activeTab, videosInitialized]);
+  }, [searchQuery, activeTab, videosInitialized, paperSort]);
 
   // Fetch YouTube videos
   const fetchVideos = useCallback(
@@ -141,6 +149,7 @@ export default function Home() {
         if (searchQuery) {
           params.set("q", searchQuery);
         }
+        params.set("order", youtubeSort);
         if (pageToken) {
           params.set("pageToken", pageToken);
         }
@@ -165,7 +174,7 @@ export default function Home() {
         setLoadingMore(false);
       }
     },
-    [searchQuery, activeTab],
+    [searchQuery, activeTab, youtubeSort],
   );
 
   // Trigger YouTube fetch when tab switches to youtube or search changes
@@ -185,6 +194,12 @@ export default function Home() {
     setActiveTab(tab);
     setShowSavedOnly(false);
     setError(null);
+    // Reset sort to default when switching tabs
+    if (tab === "papers") {
+      setPaperSort("submittedDate");
+    } else {
+      setYoutubeSort("date");
+    }
   };
 
   const isBookmarked = (id: string) => bookmarks.some((b) => b.id === id);
@@ -443,6 +458,10 @@ export default function Home() {
           onSearch={handleSearch}
           searchQuery={searchQuery}
           bookmarkCount={bookmarks.length}
+          paperSort={paperSort}
+          youtubeSort={youtubeSort}
+          onPaperSortChange={setPaperSort}
+          onYoutubeSortChange={setYoutubeSort}
         />
         {renderContent()}
       </div>

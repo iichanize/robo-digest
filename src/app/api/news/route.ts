@@ -12,6 +12,13 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const keyword = searchParams.get("q");
 
+    // Sort parameter
+    const VALID_SORT_BY = ["submittedDate", "relevance", "lastUpdatedDate"];
+    const sortByParam = searchParams.get("sortBy") || "submittedDate";
+    const sortBy = VALID_SORT_BY.includes(sortByParam)
+      ? sortByParam
+      : "submittedDate";
+
     // Construct query
     // If keyword is provided, search in all fields for that keyword within cs.RO category
     // Otherwise use the default complex query
@@ -21,7 +28,7 @@ export async function GET(request: Request) {
     }
 
     // 1. Fetch from arXiv
-    const query = `search_query=${encodeURIComponent(apiQuery)}&start=0&max_results=${MAX_RESULTS}&sortBy=submittedDate&sortOrder=descending`;
+    const query = `search_query=${encodeURIComponent(apiQuery)}&start=0&max_results=${MAX_RESULTS}&sortBy=${sortBy}&sortOrder=descending`;
     const response = await fetch(`${ARXIV_BASE_URL}?${query}`);
 
     if (!response.ok) {
