@@ -1,5 +1,8 @@
 "use client";
 
+export type PaperSortOption = "submittedDate" | "relevance" | "lastUpdatedDate";
+export type YouTubeSortOption = "date" | "relevance" | "viewCount" | "rating";
+
 type HeaderProps = {
   activeTab: "papers" | "youtube";
   onTabChange: (tab: "papers" | "youtube") => void;
@@ -10,6 +13,10 @@ type HeaderProps = {
   onSearch: (e: React.FormEvent) => void;
   searchQuery: string;
   bookmarkCount: number;
+  paperSort: PaperSortOption;
+  youtubeSort: YouTubeSortOption;
+  onPaperSortChange: (sort: PaperSortOption) => void;
+  onYoutubeSortChange: (sort: YouTubeSortOption) => void;
 };
 
 export default function Header({
@@ -22,6 +29,10 @@ export default function Header({
   onSearch,
   searchQuery,
   bookmarkCount,
+  paperSort,
+  youtubeSort,
+  onPaperSortChange,
+  onYoutubeSortChange,
 }: HeaderProps) {
   return (
     <header className="mb-8">
@@ -86,35 +97,68 @@ export default function Header({
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs + Sort */}
       {!showSavedOnly && (
-        <div className="flex border-b border-slate-200">
-          <button
-            onClick={() => onTabChange("papers")}
-            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-              activeTab === "papers"
-                ? "text-indigo-700"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            📄 論文
-            {activeTab === "papers" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 rounded-full" />
+        <div className="flex items-center justify-between border-b border-slate-200">
+          <div className="flex">
+            <button
+              onClick={() => onTabChange("papers")}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+                activeTab === "papers"
+                  ? "text-indigo-700"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              📄 論文
+              {activeTab === "papers" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 rounded-full" />
+              )}
+            </button>
+            <button
+              onClick={() => onTabChange("youtube")}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+                activeTab === "youtube"
+                  ? "text-red-600"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              ▶ YouTube
+              {activeTab === "youtube" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+              )}
+            </button>
+          </div>
+
+          {/* Sort dropdown */}
+          <div className="flex items-center gap-2 pb-1">
+            <label className="text-xs text-slate-400">並び替え</label>
+            {activeTab === "papers" ? (
+              <select
+                value={paperSort}
+                onChange={(e) =>
+                  onPaperSortChange(e.target.value as PaperSortOption)
+                }
+                className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="submittedDate">📅 新着順</option>
+                <option value="relevance">🔍 関連度順</option>
+                <option value="lastUpdatedDate">🔄 更新日順</option>
+              </select>
+            ) : (
+              <select
+                value={youtubeSort}
+                onChange={(e) =>
+                  onYoutubeSortChange(e.target.value as YouTubeSortOption)
+                }
+                className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="date">📅 新着順</option>
+                <option value="relevance">🔍 関連度順</option>
+                <option value="viewCount">👁 再生回数順</option>
+                <option value="rating">⭐ 評価順</option>
+              </select>
             )}
-          </button>
-          <button
-            onClick={() => onTabChange("youtube")}
-            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-              activeTab === "youtube"
-                ? "text-red-600"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            ▶ YouTube
-            {activeTab === "youtube" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
-            )}
-          </button>
+          </div>
         </div>
       )}
     </header>

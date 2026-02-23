@@ -21,11 +21,16 @@ export async function GET(request: Request) {
     );
     const pageToken = searchParams.get("pageToken") || "";
 
+    // Sort parameter
+    const VALID_ORDERS = ["date", "relevance", "viewCount", "rating"];
+    const orderParam = searchParams.get("order") || "date";
+    const order = VALID_ORDERS.includes(orderParam) ? orderParam : "date";
+
     const params = new URLSearchParams({
       part: "snippet",
       q: query,
       type: "video",
-      order: "date",
+      order,
       maxResults: String(maxResults),
       regionCode: "JP",
       key: YOUTUBE_API_KEY,
