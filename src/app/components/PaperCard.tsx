@@ -18,10 +18,10 @@ export default function PaperCard({
   onSummarize,
 }: PaperCardProps) {
   return (
-    <article className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col relative group">
+    <article className="bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative group">
       <button
         onClick={(e) => onToggleBookmark(paper, e)}
-        className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-full transition"
+        className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-full transition"
         title={isBookmarked ? "お気に入り解除" : "お気に入り追加"}
       >
         {isBookmarked ? (
@@ -54,7 +54,7 @@ export default function PaperCard({
       <div className="p-6 flex-1">
         {paper.category && (
           <div className="flex justify-between items-start mb-3">
-            <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-full">
+            <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
               {paper.category}
             </span>
           </div>
@@ -62,10 +62,10 @@ export default function PaperCard({
 
         {paper.title_ja ? (
           <>
-            <h2 className="text-xl font-bold text-slate-800 leading-snug mb-2 pr-8">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-snug mb-2 pr-8">
               {paper.title_ja}
             </h2>
-            <ul className="space-y-2 text-sm text-slate-600 mt-4 mb-4">
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400 mt-4 mb-4">
               {paper.points?.map((point, i) => (
                 <li key={i} className="flex gap-2 items-start">
                   <span className="text-indigo-400 mt-1">•</span>
@@ -76,10 +76,10 @@ export default function PaperCard({
           </>
         ) : (
           <>
-            <h2 className="text-lg font-semibold text-slate-800 leading-snug mb-2 pr-8">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 leading-snug mb-2 pr-8">
               {paper.title}
             </h2>
-            <p className="text-sm text-slate-500 line-clamp-4 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-4 mb-4">
               {paper.summary}
             </p>
           </>
@@ -91,10 +91,10 @@ export default function PaperCard({
           <button
             onClick={() => onSummarize(paper)}
             disabled={isSummarizing}
-            className="w-full py-2 px-4 bg-indigo-50 text-indigo-700 font-medium rounded-lg hover:bg-indigo-100 transition-colors text-sm flex justify-center items-center"
+            className="w-full py-2 px-4 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors text-sm flex justify-center items-center"
           >
             {isSummarizing ? (
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-700 mr-2"></span>
+              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-700 dark:border-indigo-400 mr-2"></span>
             ) : (
               "✨ AI要約する"
             )}
@@ -104,7 +104,7 @@ export default function PaperCard({
           href={paper.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full text-center py-2 px-4 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors text-sm"
+          className="block w-full text-center py-2 px-4 bg-slate-900 dark:bg-slate-700 text-white font-medium rounded-lg hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors text-sm"
         >
           原文を読む
         </a>

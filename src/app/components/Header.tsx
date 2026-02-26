@@ -1,5 +1,7 @@
 "use client";
 
+import ThemeToggle from "./ThemeToggle";
+
 export type PaperSortOption = "submittedDate" | "relevance" | "lastUpdatedDate";
 export type YouTubeSortOption = "date" | "relevance" | "viewCount" | "rating";
 
@@ -38,10 +40,10 @@ export default function Header({
     <header className="mb-8">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
         <div className="text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-indigo-700 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-indigo-700 dark:text-indigo-400 tracking-tight">
             RoboDigest
           </h1>
-          <p className="mt-2 text-slate-600">
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
             Robotics Research Dashboard{" "}
             {searchQuery && !showSavedOnly && `for "${searchQuery}"`}
             {showSavedOnly && " (Favorites)"}
@@ -49,12 +51,14 @@ export default function Header({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
+          <ThemeToggle />
+
           <button
             onClick={onToggleSaved}
             className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
               showSavedOnly
-                ? "bg-yellow-100 text-yellow-700 border-yellow-200 border"
-                : "bg-white text-slate-600 border border-slate-300 hover:bg-slate-50"
+                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700 border"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
             }`}
           >
             <svg
@@ -82,7 +86,7 @@ export default function Header({
                   ? "Search papers..."
                   : "Search YouTube..."
               }
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
+              className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               value={keyword}
               onChange={(e) => onKeywordChange(e.target.value)}
               suppressHydrationWarning={true}
@@ -99,46 +103,48 @@ export default function Header({
 
       {/* Tabs + Sort */}
       {!showSavedOnly && (
-        <div className="flex items-center justify-between border-b border-slate-200">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
           <div className="flex">
             <button
               onClick={() => onTabChange("papers")}
               className={`px-6 py-3 font-medium text-sm transition-colors relative ${
                 activeTab === "papers"
-                  ? "text-indigo-700"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "text-indigo-700 dark:text-indigo-400"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
             >
               📄 論文
               {activeTab === "papers" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 dark:bg-indigo-400 rounded-full" />
               )}
             </button>
             <button
               onClick={() => onTabChange("youtube")}
               className={`px-6 py-3 font-medium text-sm transition-colors relative ${
                 activeTab === "youtube"
-                  ? "text-red-600"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
             >
               ▶ YouTube
               {activeTab === "youtube" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 rounded-full" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-400 rounded-full" />
               )}
             </button>
           </div>
 
           {/* Sort dropdown */}
           <div className="flex items-center gap-2 pb-1">
-            <label className="text-xs text-slate-400">並び替え</label>
+            <label className="text-xs text-slate-400 dark:text-slate-500">
+              並び替え
+            </label>
             {activeTab === "papers" ? (
               <select
                 value={paperSort}
                 onChange={(e) =>
                   onPaperSortChange(e.target.value as PaperSortOption)
                 }
-                className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="text-sm border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="submittedDate">📅 新着順</option>
                 <option value="relevance">🔍 関連度順</option>
@@ -150,7 +156,7 @@ export default function Header({
                 onChange={(e) =>
                   onYoutubeSortChange(e.target.value as YouTubeSortOption)
                 }
-                className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="text-sm border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
                 <option value="date">📅 新着順</option>
                 <option value="relevance">🔍 関連度順</option>

@@ -315,7 +315,7 @@ export default function Home() {
       if (bookmarks.length === 0) {
         return (
           <div className="text-center py-20">
-            <p className="text-slate-500 text-lg">
+            <p className="text-slate-500 dark:text-slate-400 text-lg">
               お気に入りのコンテンツはまだありません。
             </p>
           </div>
@@ -379,7 +379,7 @@ export default function Home() {
       if (papers.length === 0) {
         return (
           <div className="text-center py-20">
-            <p className="text-slate-500 text-lg">
+            <p className="text-slate-500 dark:text-slate-400 text-lg">
               論文が見つかりませんでした。
             </p>
           </div>
@@ -405,7 +405,9 @@ export default function Home() {
     if (videos.length === 0) {
       return (
         <div className="text-center py-20">
-          <p className="text-slate-500 text-lg">動画が見つかりませんでした。</p>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">
+            動画が見つかりませんでした。
+          </p>
         </div>
       );
     }
@@ -446,7 +448,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-8">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <Header
           activeTab={activeTab}

@@ -18,10 +18,10 @@ export default function VideoCard({
   onSummarize,
 }: VideoCardProps) {
   return (
-    <article className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 overflow-hidden flex flex-col relative group">
+    <article className="bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative group">
       <button
         onClick={(e) => onToggleBookmark(video, e)}
-        className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 rounded-full transition"
+        className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/30 rounded-full transition"
         title={isBookmarked ? "お気に入り解除" : "お気に入り追加"}
       >
         {isBookmarked ? (
@@ -66,7 +66,7 @@ export default function VideoCard({
       <div className="p-5 flex-1">
         {video.category && (
           <div className="flex justify-between items-start mb-3">
-            <span className="inline-block px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 rounded-full">
+            <span className="inline-block px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-full">
               {video.category}
             </span>
           </div>
@@ -74,10 +74,10 @@ export default function VideoCard({
 
         {video.title_ja ? (
           <>
-            <h2 className="text-xl font-bold text-slate-800 leading-snug mb-2 pr-8">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-snug mb-2 pr-8">
               {video.title_ja}
             </h2>
-            <ul className="space-y-2 text-sm text-slate-600 mt-4 mb-4">
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400 mt-4 mb-4">
               {video.points?.map((point, i) => (
                 <li key={i} className="flex gap-2 items-start">
                   <span className="text-red-400 mt-1">•</span>
@@ -88,16 +88,16 @@ export default function VideoCard({
           </>
         ) : (
           <>
-            <h2 className="text-base font-semibold text-slate-800 leading-snug mb-2 pr-8">
+            <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 leading-snug mb-2 pr-8">
               {video.title}
             </h2>
-            <p className="text-sm text-slate-500 line-clamp-2 mb-2">
+            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">
               {video.description}
             </p>
           </>
         )}
 
-        <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+        <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 mt-2">
           <span>{video.channelTitle}</span>
           <span>•</span>
           <span>{new Date(video.publishedAt).toLocaleDateString("ja-JP")}</span>
@@ -109,10 +109,10 @@ export default function VideoCard({
           <button
             onClick={() => onSummarize(video)}
             disabled={isSummarizing}
-            className="w-full py-2 px-4 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors text-sm flex justify-center items-center"
+            className="w-full py-2 px-4 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors text-sm flex justify-center items-center"
           >
             {isSummarizing ? (
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-red-700 mr-2"></span>
+              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-red-700 dark:border-red-400 mr-2"></span>
             ) : (
               "✨ AI要約する"
             )}
