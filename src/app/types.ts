@@ -25,3 +25,8 @@ export type Video = {
 export type ContentItem =
   | (Paper & { type: "paper" })
   | (Video & { type: "video" });
+
+export interface FavoriteItem {
+  content: ContentItem;
+  addedAt: string; // ISO 8601形式の日時文字列
+}

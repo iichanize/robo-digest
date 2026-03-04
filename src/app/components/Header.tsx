@@ -6,15 +6,13 @@ export type PaperSortOption = "submittedDate" | "relevance" | "lastUpdatedDate";
 export type YouTubeSortOption = "date" | "relevance" | "viewCount" | "rating";
 
 type HeaderProps = {
-  activeTab: "papers" | "youtube";
-  onTabChange: (tab: "papers" | "youtube") => void;
-  showSavedOnly: boolean;
-  onToggleSaved: () => void;
+  activeTab: "papers" | "youtube" | "favorites";
+  onTabChange: (tab: "papers" | "youtube" | "favorites") => void;
   keyword: string;
   onKeywordChange: (value: string) => void;
   onSearch: (e: React.FormEvent) => void;
   searchQuery: string;
-  bookmarkCount: number;
+  favoriteCount: number;
   paperSort: PaperSortOption;
   youtubeSort: YouTubeSortOption;
   onPaperSortChange: (sort: PaperSortOption) => void;
@@ -24,13 +22,11 @@ type HeaderProps = {
 export default function Header({
   activeTab,
   onTabChange,
-  showSavedOnly,
-  onToggleSaved,
   keyword,
   onKeywordChange,
   onSearch,
   searchQuery,
-  bookmarkCount,
+  favoriteCount,
   paperSort,
   youtubeSort,
   onPaperSortChange,
@@ -45,95 +41,94 @@ export default function Header({
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
             Robotics Research Dashboard{" "}
-            {searchQuery && !showSavedOnly && `for "${searchQuery}"`}
-            {showSavedOnly && " (Favorites)"}
+            {searchQuery && activeTab !== "favorites" && `for "${searchQuery}"`}
+            {activeTab === "favorites" && " — お気に入り"}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto">
           <ThemeToggle />
 
-          <button
-            onClick={onToggleSaved}
-            className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
-              showSavedOnly
-                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700 border"
-                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            {showSavedOnly
-              ? "全て表示"
-              : `お気に入り${bookmarkCount > 0 ? ` (${bookmarkCount})` : ""}`}
-          </button>
-
-          <form
-            onSubmit={onSearch}
-            className="flex gap-2 w-full sm:w-auto"
-            suppressHydrationWarning={true}
-          >
-            <input
-              type="text"
-              placeholder={
-                activeTab === "papers"
-                  ? "Search papers..."
-                  : "Search YouTube..."
-              }
-              className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              value={keyword}
-              onChange={(e) => onKeywordChange(e.target.value)}
+          {activeTab !== "favorites" && (
+            <form
+              onSubmit={onSearch}
+              className="flex gap-2 w-full sm:w-auto"
               suppressHydrationWarning={true}
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
             >
-              Search
-            </button>
-          </form>
+              <input
+                type="text"
+                placeholder={
+                  activeTab === "papers"
+                    ? "Search papers..."
+                    : "Search YouTube..."
+                }
+                className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                value={keyword}
+                onChange={(e) => onKeywordChange(e.target.value)}
+                suppressHydrationWarning={true}
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition"
+              >
+                Search
+              </button>
+            </form>
+          )}
         </div>
       </div>
 
       {/* Tabs + Sort */}
-      {!showSavedOnly && (
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-          <div className="flex">
-            <button
-              onClick={() => onTabChange("papers")}
-              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-                activeTab === "papers"
-                  ? "text-indigo-700 dark:text-indigo-400"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
-            >
-              📄 論文
-              {activeTab === "papers" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 dark:bg-indigo-400 rounded-full" />
-              )}
-            </button>
-            <button
-              onClick={() => onTabChange("youtube")}
-              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-                activeTab === "youtube"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              }`}
-            >
-              ▶ YouTube
-              {activeTab === "youtube" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-400 rounded-full" />
-              )}
-            </button>
-          </div>
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
+        <div className="flex">
+          <button
+            onClick={() => onTabChange("papers")}
+            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+              activeTab === "papers"
+                ? "text-indigo-700 dark:text-indigo-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            📄 論文
+            {activeTab === "papers" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-700 dark:bg-indigo-400 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => onTabChange("youtube")}
+            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+              activeTab === "youtube"
+                ? "text-red-600 dark:text-red-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            ▶ YouTube
+            {activeTab === "youtube" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600 dark:bg-red-400 rounded-full" />
+            )}
+          </button>
+          <button
+            onClick={() => onTabChange("favorites")}
+            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+              activeTab === "favorites"
+                ? "text-yellow-600 dark:text-yellow-400"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            ⭐ お気に入り
+            {favoriteCount > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400">
+                {favoriteCount}
+              </span>
+            )}
+            {activeTab === "favorites" && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yellow-500 dark:bg-yellow-400 rounded-full" />
+            )}
+          </button>
+        </div>
 
-          {/* Sort dropdown */}
+        {/* Sort dropdown - only show for papers/youtube tabs */}
+        {activeTab !== "favorites" && (
           <div className="flex items-center gap-2 pb-1">
             <label className="text-xs text-slate-400 dark:text-slate-500">
               並び替え
@@ -165,8 +160,8 @@ export default function Header({
               </select>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </header>
   );
 }

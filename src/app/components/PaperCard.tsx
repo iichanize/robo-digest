@@ -8,6 +8,7 @@ type PaperCardProps = {
   isSummarizing: boolean;
   onToggleBookmark: (paper: Paper, e: React.MouseEvent) => void;
   onSummarize: (paper: Paper) => void;
+  addedAt?: string;
 };
 
 export default function PaperCard({
@@ -16,6 +17,7 @@ export default function PaperCard({
   isSummarizing,
   onToggleBookmark,
   onSummarize,
+  addedAt,
 }: PaperCardProps) {
   return (
     <article className="bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative group">
@@ -52,6 +54,14 @@ export default function PaperCard({
       </button>
 
       <div className="p-6 flex-1">
+        {addedAt && (
+          <div className="mb-3">
+            <span className="inline-block px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 rounded-full">
+              📌 追加日: {new Date(addedAt).toLocaleDateString("ja-JP")}
+            </span>
+          </div>
+        )}
+
         {paper.category && (
           <div className="flex justify-between items-start mb-3">
             <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-full">
