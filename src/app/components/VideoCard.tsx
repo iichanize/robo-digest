@@ -8,6 +8,7 @@ type VideoCardProps = {
   isSummarizing: boolean;
   onToggleBookmark: (video: Video, e: React.MouseEvent) => void;
   onSummarize: (video: Video) => void;
+  addedAt?: string;
 };
 
 export default function VideoCard({
@@ -16,6 +17,7 @@ export default function VideoCard({
   isSummarizing,
   onToggleBookmark,
   onSummarize,
+  addedAt,
 }: VideoCardProps) {
   return (
     <article className="bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col relative group">
@@ -64,6 +66,14 @@ export default function VideoCard({
       </div>
 
       <div className="p-5 flex-1">
+        {addedAt && (
+          <div className="mb-3">
+            <span className="inline-block px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 rounded-full">
+              📌 追加日: {new Date(addedAt).toLocaleDateString("ja-JP")}
+            </span>
+          </div>
+        )}
+
         {video.category && (
           <div className="flex justify-between items-start mb-3">
             <span className="inline-block px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-full">

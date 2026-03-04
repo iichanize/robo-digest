@@ -9,9 +9,13 @@ import Header, {
 import PaperCard from "./components/PaperCard";
 import VideoCard from "./components/VideoCard";
 import SkeletonCard from "./components/SkeletonCard";
+import FavoritesView from "./components/FavoritesView";
+import { useFavorites } from "./hooks/useFavorites";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"papers" | "youtube">("papers");
+  const [activeTab, setActiveTab] = useState<
+    "papers" | "youtube" | "favorites"
+  >("papers");
 
   // Papers state
   const [papers, setPapers] = useState<Paper[]>([]);
@@ -33,76 +37,17 @@ export default function Home() {
   const [paperSort, setPaperSort] = useState<PaperSortOption>("submittedDate");
   const [youtubeSort, setYoutubeSort] = useState<YouTubeSortOption>("date");
 
-  // Bookmarks: unified Paper + Video
-  const [bookmarks, setBookmarks] = useState<ContentItem[]>([]);
-  const [showSavedOnly, setShowSavedOnly] = useState(false);
+  // Favorites hook
+  const {
+    favorites,
+    isFavorite,
+    toggleFavorite,
+    getFilteredFavorites,
+    exportAsMarkdown,
+    updateFavoriteContent,
+  } = useFavorites();
 
   const [summarizing, setSummarizing] = useState<Set<string>>(new Set());
-
-  // Load bookmarks on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("robo-digest-bookmarks-v2");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (
-          Array.isArray(parsed) &&
-          parsed.length > 0 &&
-          typeof parsed[0] === "object" &&
-          "id" in parsed[0]
-        ) {
-          const uniqueBookmarks = Array.from(
-            new Map(
-              parsed.map((item: ContentItem) => [item.id, item]),
-            ).values(),
-          );
-          setBookmarks(uniqueBookmarks as ContentItem[]);
-        }
-      } catch (e) {
-        console.error("Failed to parse bookmarks", e);
-      }
-    }
-  }, []);
-
-  // Also migrate old bookmarks (papers only) if they exist
-  useEffect(() => {
-    const oldSaved = localStorage.getItem("robo-digest-bookmarks");
-    if (oldSaved) {
-      try {
-        const parsed = JSON.parse(oldSaved);
-        if (
-          Array.isArray(parsed) &&
-          parsed.length > 0 &&
-          typeof parsed[0] === "object" &&
-          "id" in parsed[0]
-        ) {
-          const migrated: ContentItem[] = parsed.map((p: Paper) => ({
-            ...p,
-            type: "paper" as const,
-          }));
-          setBookmarks((prev) => {
-            const merged = [...prev, ...migrated];
-            return Array.from(
-              new Map(merged.map((item) => [item.id, item])).values(),
-            ) as ContentItem[];
-          });
-          localStorage.removeItem("robo-digest-bookmarks");
-        }
-      } catch (e) {
-        console.error("Failed to migrate old bookmarks", e);
-      }
-    }
-  }, []);
-
-  // Save bookmarks on change
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "robo-digest-bookmarks-v2",
-        JSON.stringify(bookmarks),
-      );
-    }
-  }, [bookmarks]);
 
   // Fetch papers
   useEffect(() => {
@@ -187,43 +132,27 @@ export default function Home() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchQuery(keyword);
-    setShowSavedOnly(false);
   };
 
-  const handleTabChange = (tab: "papers" | "youtube") => {
+  const handleTabChange = (tab: "papers" | "youtube" | "favorites") => {
     setActiveTab(tab);
-    setShowSavedOnly(false);
     setError(null);
     // Reset sort to default when switching tabs
     if (tab === "papers") {
       setPaperSort("submittedDate");
-    } else {
+    } else if (tab === "youtube") {
       setYoutubeSort("date");
     }
   };
 
-  const isBookmarked = (id: string) => bookmarks.some((b) => b.id === id);
-
   const togglePaperBookmark = (paper: Paper, e: React.MouseEvent) => {
     e.stopPropagation();
-    setBookmarks((prev) => {
-      if (prev.some((b) => b.id === paper.id)) {
-        return prev.filter((b) => b.id !== paper.id);
-      } else {
-        return [...prev, { ...paper, type: "paper" as const }];
-      }
-    });
+    toggleFavorite({ ...paper, type: "paper" as const });
   };
 
   const toggleVideoBookmark = (video: Video, e: React.MouseEvent) => {
     e.stopPropagation();
-    setBookmarks((prev) => {
-      if (prev.some((b) => b.id === video.id)) {
-        return prev.filter((b) => b.id !== video.id);
-      } else {
-        return [...prev, { ...video, type: "video" as const }];
-      }
-    });
+    toggleFavorite({ ...video, type: "video" as const });
   };
 
   const handleSummarizePaper = async (paper: Paper) => {
@@ -248,11 +177,10 @@ export default function Home() {
       setPapers((prev) =>
         prev.map((p) => (p.id === paper.id ? updatedPaper : p)),
       );
-      setBookmarks((prev) =>
-        prev.map((b) =>
-          b.id === paper.id ? { ...updatedPaper, type: "paper" as const } : b,
-        ),
-      );
+      // Also update in favorites if bookmarked
+      if (isFavorite(paper.id)) {
+        updateFavoriteContent({ ...updatedPaper, type: "paper" as const });
+      }
     } catch (err) {
       console.error(err);
       alert("要約の生成に失敗しました");
@@ -287,11 +215,10 @@ export default function Home() {
       setVideos((prev) =>
         prev.map((v) => (v.id === video.id ? updatedVideo : v)),
       );
-      setBookmarks((prev) =>
-        prev.map((b) =>
-          b.id === video.id ? { ...updatedVideo, type: "video" as const } : b,
-        ),
-      );
+      // Also update in favorites if bookmarked
+      if (isFavorite(video.id)) {
+        updateFavoriteContent({ ...updatedVideo, type: "video" as const });
+      }
     } catch (err) {
       console.error(err);
       alert("要約の生成に失敗しました");
@@ -310,41 +237,19 @@ export default function Home() {
 
   // Render content
   const renderContent = () => {
-    // Favorites mode: show all bookmarks (mixed)
-    if (showSavedOnly) {
-      if (bookmarks.length === 0) {
-        return (
-          <div className="text-center py-20">
-            <p className="text-slate-500 dark:text-slate-400 text-lg">
-              お気に入りのコンテンツはまだありません。
-            </p>
-          </div>
-        );
-      }
+    // Favorites tab
+    if (activeTab === "favorites") {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bookmarks.map((item) =>
-            item.type === "paper" ? (
-              <PaperCard
-                key={item.id}
-                paper={item}
-                isBookmarked={true}
-                isSummarizing={summarizing.has(item.id)}
-                onToggleBookmark={togglePaperBookmark}
-                onSummarize={handleSummarizePaper}
-              />
-            ) : (
-              <VideoCard
-                key={item.id}
-                video={item}
-                isBookmarked={true}
-                isSummarizing={summarizing.has(item.id)}
-                onToggleBookmark={toggleVideoBookmark}
-                onSummarize={handleSummarizeVideo}
-              />
-            ),
-          )}
-        </div>
+        <FavoritesView
+          getFilteredFavorites={getFilteredFavorites}
+          exportAsMarkdown={exportAsMarkdown}
+          isFavorite={isFavorite}
+          onTogglePaperBookmark={togglePaperBookmark}
+          onToggleVideoBookmark={toggleVideoBookmark}
+          onSummarizePaper={handleSummarizePaper}
+          onSummarizeVideo={handleSummarizeVideo}
+          summarizing={summarizing}
+        />
       );
     }
 
@@ -391,7 +296,7 @@ export default function Home() {
             <PaperCard
               key={paper.id}
               paper={paper}
-              isBookmarked={isBookmarked(paper.id)}
+              isBookmarked={isFavorite(paper.id)}
               isSummarizing={summarizing.has(paper.id)}
               onToggleBookmark={togglePaperBookmark}
               onSummarize={handleSummarizePaper}
@@ -418,7 +323,7 @@ export default function Home() {
             <VideoCard
               key={video.id}
               video={video}
-              isBookmarked={isBookmarked(video.id)}
+              isBookmarked={isFavorite(video.id)}
               isSummarizing={summarizing.has(video.id)}
               onToggleBookmark={toggleVideoBookmark}
               onSummarize={handleSummarizeVideo}
@@ -453,13 +358,11 @@ export default function Home() {
         <Header
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          showSavedOnly={showSavedOnly}
-          onToggleSaved={() => setShowSavedOnly(!showSavedOnly)}
           keyword={keyword}
           onKeywordChange={setKeyword}
           onSearch={handleSearch}
           searchQuery={searchQuery}
-          bookmarkCount={bookmarks.length}
+          favoriteCount={favorites.length}
           paperSort={paperSort}
           youtubeSort={youtubeSort}
           onPaperSortChange={setPaperSort}
